@@ -1,56 +1,63 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from 'react-native';
-import { Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
-const ItemDetail = ({ itemId  }) => {
-    const [wine, setWine] = useState();
-    const [winery, setWinery] = useState();
-    const [location, setLocation] = useState();
-    const [image, setImage] = useState();
+const ItemDetail = ({ itemId }) => {
+    const { isDarkMode } = useTheme();
+
+    const [wine, setWine] = useState(null);
+    const [winery, setWinery] = useState(null);
+    const [location, setLocation] = useState(null);
+    const [image, setImage] = useState(null);
 
     useEffect(() => {
         getData();
     }, [itemId]);
 
     const getData = async () => {
-        await fetch(`https://api.sampleapis.com/wines/reds/${itemId}`)
-            .then((res) => res.json())
-            .then((response) => {
-                setWine(response.wine);
-                setWinery(response.winery);
-                setLocation(response.location);
-                setImage(response.image);
-            });
-    }
+        try {
+            const response = await fetch(`https://api.sampleapis.com/wines/reds/${itemId}`);
+            const data = await response.json();
+
+            setWine(data.wine);
+            setWinery(data.winery);
+            setLocation(data.location);
+            setImage(data.image);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
 
     if (!itemId) {
         return (
-          <View style={styles.container}>
-            <Text>Item not found</Text>
-          </View>
+            <View style={styles.container}>
+                <Text>Item not found</Text>
+            </View>
         );
-      }
+    }
+
+    const containerStyle = isDarkMode ? styles.darkContainer : styles.lightContainer;
+    const textStyle = isDarkMode ? styles.darkText : styles.lightText;
+    const titleStyle = isDarkMode ? styles.darkTitle : styles.lightTitle;
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Item Detail</Text>
-
-            <Text style={styles.label}>ID</Text>
-            <Text style={styles.value}>{itemId}</Text>
-
-            <Text style={styles.label}>Name</Text>
-            <Text style={styles.value}>{wine}</Text>
-
-            <Text style={styles.label}>Winery</Text>
-            <Text style={styles.value}>{winery}</Text>
-
-            <Text style={styles.label}>Location</Text>
-            <Text style={styles.value}>{location}</Text>
-
-            <Image source={{ uri: image }} style={styles.image} />
+        <View style={[styles.container, containerStyle]}>
+            <Text style={[styles.title, titleStyle]}>Item Detail</Text>
+            {renderDetail('ID', itemId, textStyle)}
+            {renderDetail('Name', wine, textStyle)}
+            {renderDetail('Winery', winery, textStyle)}
+            {renderDetail('Location', location, textStyle)}
+            {image && <Image source={{ uri: image }} style={styles.image} />}
         </View>
     );
 };
+
+const renderDetail = (label: any, value: any, textStyle: any) => (
+    <>
+        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.text, textStyle]}>{value}</Text>
+    </>
+);
 
 const styles = StyleSheet.create({
     container: {
@@ -59,20 +66,23 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 18,
-        color: '#000',
         fontWeight: 'bold',
         textAlign: 'center',
-        marginBottom: 16,
+        marginBottom: 20,
+    },
+    darkTitle: {
+        color: '#fff',
+    },
+    lightTitle: {
+        color: '#000',
     },
     label: {
         fontSize: 16,
         color: '#888',
         marginBottom: 4,
     },
-    value: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 12
+    text: {
+        fontSize: 16,
     },
     image: {
         marginTop: 10,
@@ -80,6 +90,18 @@ const styles = StyleSheet.create({
         width: null,
         height: null,
         resizeMode: 'cover',
+    },
+    lightContainer: {
+        backgroundColor: '#fff',
+    },
+    darkContainer: {
+        backgroundColor: 'black',
+    },
+    lightText: {
+        color: '#000',
+    },
+    darkText: {
+        color: '#fff',
     },
 });
 
