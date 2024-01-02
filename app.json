@@ -25,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d88e2602-462b-4590-a16c-fb7d63e49f04"
+      }
+    },
+    "owner": "ortolahector"
   }
 }
